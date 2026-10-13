@@ -7,9 +7,9 @@ window.VAHAPAJA_CONFIG = {
   emailjs: {
     publicKey: "cHlQ31Zot-UefV6_b",
     serviceId: "service_7x0nnki",
-    templateId: ""
+    templateId: "template_bb3aohh"
   },
 
   /* 3. Sähköpostiosoite, johon uudet tilaukset ja peruutukset ilmoitetaan */
-  ownerEmail: ""
+  ownerEmail: "luukas.haikarainen@outlook.com"
 };

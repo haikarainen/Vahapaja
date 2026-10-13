@@ -5,7 +5,7 @@ window.VAHAPAJA_CONFIG = {
 
   /* 2. EmailJS: Account-sivulta Public Key, Email Services -sivulta Service ID, Email Templates -sivulta Template ID */
   emailjs: {
-    publicKey: "",
+    publicKey: "cHlQ31Zot-UefV6_b",
     serviceId: "",
     templateId: ""
   },

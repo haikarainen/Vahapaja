@@ -103,6 +103,18 @@ button,input,textarea,select{font:inherit;color:inherit}
 .step p{color:var(--muted);font-size:15px;max-width:34ch}
 
 /* referral strip */
+.rv-top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;margin-bottom:24px}
+.rv-score{display:flex;align-items:center;gap:10px;font-size:15px}
+.rv-score b{font-size:34px;line-height:1;font-weight:600}
+.stars{display:inline-flex;gap:2px;color:#E8A317}
+.stars svg{width:18px;height:18px;fill:currentColor}
+.stars .off{color:var(--line)}
+.rv-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.rv{background:var(--surface);border:1px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:10px;margin:0}
+.rv p{font-size:15px}.rv .who{margin-top:auto;font-size:13px;color:var(--muted)}
+.rv-empty{border:1px dashed var(--line);padding:22px;max-width:60ch}
+.rv-empty p{color:var(--muted);margin-bottom:14px}
+.rv-g{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
 .strip{background:var(--card);color:var(--ink)}
 .strip .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px 48px;flex-wrap:wrap;padding-block:clamp(36px,5vw,64px)}
 .strip h2{font-size:clamp(30px,4.4vw,56px);font-weight:700;color:var(--accent)}
@@ -318,6 +330,8 @@ button,input,textarea,select{font:inherit;color:inherit}
     </div>
   </div>
 
+  <div class="wrap" style="padding-bottom:clamp(40px,6vw,80px)"><div data-reviews="home"></div></div>
+
   <div class="strip">
     <div class="wrap">
       <div>
@@ -341,6 +355,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     </div>
     <div class="grid" id="prodGrid"></div>
     <div class="note">Täyshuoltoon kuuluu kaverialennus −10 %. Pohjan korjauksen hinta on alkaen-hinta: lopullinen hinta riippuu vaurion laajuudesta, ja kerromme sen sinulle ennen työn aloitusta. Lue myös <a href="#ehdot">palveluehdot</a>.</div>
+    <div data-reviews="prod" style="margin-top:56px"></div>
     <div class="soon"><span class="eyebrow">Tulossa</span><span class="muted">Vahat ja huoltotarvikkeet verkkokauppaan.</span></div>
   </div>
 </section>
@@ -467,10 +482,11 @@ button,input,textarea,select{font:inherit;color:inherit}
 </footer>
 
 <script src="config.js"></script>
+<script src="reviews.js"></script>
 <script>
 (function(){
   /* Yrityksen tiedot: täytä tähän, ne päivittyvät alatunnisteeseen, ehtoihin ja tietosuojaselosteeseen. */
-  var BIZ = {name:"[YRITYKSEN NIMI]", ytunnus:"[Y-TUNNUS]", address:"[OSOITE]", phone:"[PUHELIN]", email:"[SÄHKÖPOSTI]"};
+  var BIZ = {name:"vahapaja", ytunnus:"", address:"[OSOITE]", phone:"", email:"luukas.haikarainen@outlook.com"};
   var VAT = 25.5, BOARD = 5;
   var SERVICES = [
     {id:"taysi", name:"Täyshuolto", price:50, disc:true, deep:true, art:"alpine",
@@ -509,6 +525,7 @@ button,input,textarea,select{font:inherit;color:inherit}
   function validName(n){ return /\p{L}{2,}/u.test(n||""); }
   function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((e||"").trim()); }
   function vatOf(total){ return Math.round(total*VAT/(100+VAT)*100)/100; }
+  function bl(label,k){ return BIZ[k]?label+bz(k)+'<br>':''; }
   function bz(k){ var v=BIZ[k]; return '<span'+(v.charAt(0)==="["?' class="ph"':'')+'>'+esc(v)+'</span>'; }
   /* puhelinnumero: palauttaa muodon +358401234567 tai null */
   function finNational(n){
@@ -585,6 +602,32 @@ button,input,textarea,select{font:inherit;color:inherit}
     $("homeTiles").innerHTML = ids.map(function(id){ var s=byId[id];
       return '<a class="tile" href="#tuotteet"><div class="art'+(s.deep?' deep':'')+'">'+art(s.art)+'</div><h3>'+esc(s.name)+'</h3><p class="from num">'+(s.from?'alk. ':'')+fmt(s.price)+' / pari · lumilauta +'+fmt(BOARD)+'</p></a>';
     }).join("");
+  }
+
+  /* Google-arvostelut: näytetään vain oikeat arvostelut, jotka on liitetty config.js:ään */
+  function renderReviews(){
+    var G=window.VAHAPAJA_REVIEWS||{}, list=(G.reviews||[]).filter(function(r){ return r&&r.text; });
+    var base=G.placeId?encodeURIComponent(G.placeId):"";
+    var readUrl=G.readUrl||(base?"https://search.google.com/local/reviews?placeid="+base:"");
+    var writeUrl=G.writeUrl||(base?"https://search.google.com/local/writereview?placeid="+base:"");
+    function star(on){ return '<svg viewBox="0 0 20 20" aria-hidden="true"'+(on?'':' class="off"')+'><path d="M10 1.5l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L1.4 7.8l6-.8z"/></svg>'; }
+    function stars(n){ var o=""; for(var i=1;i<=5;i++) o+=star(i<=Math.round(n)); return '<span class="stars" role="img" aria-label="'+n+' / 5 tähteä">'+o+'</span>'; }
+    var gmark='<span class="rv-g"><svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-2.7-.4-3.9H24v7.4h12c-.2 1.9-1.5 4.7-4.4 6.6l6.8 5.3C43 36 45 30.8 45 24.5z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-6.9-5.3c-1.9 1.3-4.4 2.2-7.6 2.2-5.8 0-10.7-3.9-12.5-9.2l-7 5.4C8 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.5 28.4c-.5-1.3-.7-2.7-.7-4.4s.3-3 .7-4.4l-7-5.4C3 17.2 2 20.5 2 24s1 6.8 2.5 9.8z"/><path fill="#EA4335" d="M24 10.4c4.1 0 6.9 1.8 8.5 3.3l6.2-6C34.9 4.2 29.9 2 24 2 15.4 2 8 6.9 4.5 14.2l7 5.4c1.8-5.3 6.7-9.2 12.5-9.2z"/></svg>Google-arvostelut</span>';
+    var html='<div class="sec-head"><h2>Asiakkaiden arvostelut</h2>'+gmark+'</div>';
+    if(list.length){
+      var top='';
+      if(G.rating) top+='<div class="rv-score"><b class="num">'+esc(String(G.rating).replace(".",","))+'</b>'+stars(Number(G.rating))+(G.count?'<span class="muted">'+esc(String(G.count))+' arvostelua</span>':'')+'</div>';
+      if(readUrl) top+='<a class="btn small ghost" href="'+esc(readUrl)+'" target="_blank" rel="noopener noreferrer">Lue kaikki Googlessa</a>';
+      if(writeUrl) top+='<a class="btn small" href="'+esc(writeUrl)+'" target="_blank" rel="noopener noreferrer">Kirjoita arvostelu</a>';
+      html+='<div class="rv-top">'+top+'</div><div class="rv-grid">'+list.slice(0,6).map(function(r){
+        var n=Math.max(1,Math.min(5,Number(r.stars)||5));
+        return '<figure class="rv">'+stars(n)+'<p>“'+esc(r.text)+'”</p><figcaption class="who">'+esc(r.name||"Asiakas")+(r.date?' · '+esc(r.date):'')+'</figcaption></figure>';
+      }).join("")+'</div>';
+    } else {
+      html+='<div class="rv-empty"><p>Oletko käyttänyt huoltoamme? Arvostelusi Googlessa auttaa muita löytämään meidät.</p>'+
+        (writeUrl?'<a class="btn small" href="'+esc(writeUrl)+'" target="_blank" rel="noopener noreferrer">Kirjoita arvostelu Googleen</a>':'<span class="muted">Arvostelulinkki tulee tähän pian.</span>')+'</div>';
+    }
+    document.querySelectorAll("[data-reviews]").forEach(function(el){ el.innerHTML=html; });
   }
 
   /* products */
@@ -840,7 +883,7 @@ button,input,textarea,select{font:inherit;color:inherit}
   function renderTerms(){
     $("termsRoot").innerHTML=
       '<p class="muted">Näitä ehtoja sovelletaan Vahapaja Ski Shopin kuluttajille tarjoamiin suksien ja lumilautojen huoltopalveluihin. Ehdot ovat voimassa tilauksen tekohetkellä.</p>'+
-      '<h2>1. Palveluntarjoaja</h2><p>'+bz("name")+'<br>Y-tunnus: '+bz("ytunnus")+'<br>Osoite: '+bz("address")+'<br>Puhelin: '+bz("phone")+'<br>Sähköposti: '+bz("email")+'<br>Yritys on arvonlisäverovelvollinen.</p>'+
+      '<h2>1. Palveluntarjoaja</h2><p>'+bz("name")+'<br>'+bl("Y-tunnus: ","ytunnus")+'Osoite: '+bz("address")+'<br>'+bl("Puhelin: ","phone")+'Sähköposti: '+bz("email")+'<br>Yritys on arvonlisäverovelvollinen.</p>'+
       '<h2>2. Palvelut ja hinnat</h2><p>Palvelut ja niiden hinnat näkyvät sivulla Huollot ja hinnat. Kaikki hinnat ovat kuluttajahintoja euroina ja sisältävät arvonlisäveron '+VATS+' %. Lumilaudan huollosta peritään '+BOARD+' € lisähinta jokaiseen palveluun. Muita lisäkuluja ei peritä.</p>'+
       '<p>Pohjan korjauksen hinta on alkaen-hinta. Lopullinen hinta riippuu vaurion laajuudesta. Kerromme lopullisen hinnan ennen työn aloittamista, eikä työtä, joka ylittää tilatun hinnan, tehdä ilman hyväksyntääsi.</p>'+
       '<h2>3. Tilaus ja sopimuksen syntyminen</h2><p>Tilaus tehdään sivuston kassalla. Sopimus syntyy, kun painat painiketta Tilaa maksuvelvollisuudella ja tilaus on tallentunut. Tilaus sitoo sinut maksamaan palvelun hinnan. Tilausvahvistus näytetään tilauksen jälkeen ja sen voi tulostaa tai tallentaa.</p>'+
@@ -854,14 +897,14 @@ button,input,textarea,select{font:inherit;color:inherit}
       '<h3 style="font-size:17px;margin-top:22px">Vapaaehtoinen peruuttamislomake</h3><p>(Täytä ja palauta tämä lomake vain, jos haluat peruuttaa sopimuksen.)</p>'+
       '<div class="form-box">Vastaanottaja: '+esc(BIZ.name)+', '+esc(BIZ.address)+', '+esc(BIZ.email)+'\n\nIlmoitan, että haluan peruuttaa tekemäni sopimuksen seuraavan palvelun suorittamisesta:\n\nTilauspäivä:\nTilausnumero:\nKuluttajan nimi:\nKuluttajan osoite:\nKuluttajan allekirjoitus (vain paperilomakkeessa):\nPäivämäärä:</div>'+
       '<h2>7. Virhe palvelussa ja reklamaatio</h2><p>Palvelu tehdään ammattitaitoisesti ja huolellisesti. Jos palvelussa on virhe, ota yhteyttä meihin kohtuullisessa ajassa siitä, kun havaitsit virheen. Kuluttajansuojalain mukaan reklamaatio katsotaan tehdyksi kohtuullisessa ajassa, kun se tehdään kahden kuukauden kuluessa siitä, kun havaitsit virheen. Korjaamme virheen tai tarvittaessa alennamme hintaa lain mukaisesti.</p>'+
-      '<h2>8. Yhteydenotot ja riitojen ratkaisu</h2><p>Reklamaatiot ja muut yhteydenotot: '+bz("email")+', '+bz("phone")+'. Jos asiaa ei saada ratkaistua keskenämme, voit pyytää neuvontaa Kuluttajaneuvonnasta (kkv.fi/kuluttajaneuvonta) ja viedä riidan Kuluttajariitalautakunnan (kuluttajariita.fi) käsiteltäväksi.</p>'+
+      '<h2>8. Yhteydenotot ja riitojen ratkaisu</h2><p>Reklamaatiot ja muut yhteydenotot: '+bz("email")+(BIZ.phone?', '+bz("phone"):'')+'. Jos asiaa ei saada ratkaistua keskenämme, voit pyytää neuvontaa Kuluttajaneuvonnasta (kkv.fi/kuluttajaneuvonta) ja viedä riidan Kuluttajariitalautakunnan (kuluttajariita.fi) käsiteltäväksi.</p>'+
       '<h2>9. Henkilötiedot</h2><p>Käsittelemme henkilötietojasi <a href="#tietosuoja">tietosuojaselosteen</a> mukaisesti.</p>'+
       '<p class="fine" style="margin-top:28px">Ehdot päivitetty: '+new Date().toLocaleDateString("fi-FI")+'</p>';
   }
   function renderPrivacy(){
     $("privacyRoot").innerHTML=
       '<p class="muted">Tämä tietosuojaseloste kertoo, miten Vahapaja Ski Shop käsittelee henkilötietojasi.</p>'+
-      '<h2>1. Rekisterinpitäjä</h2><p>'+bz("name")+'<br>Y-tunnus: '+bz("ytunnus")+'<br>Osoite: '+bz("address")+'<br>Sähköposti ja yhteydenotot tietosuoja-asioissa: '+bz("email")+'<br>Puhelin: '+bz("phone")+'</p>'+
+      '<h2>1. Rekisterinpitäjä</h2><p>'+bz("name")+'<br>'+bl("Y-tunnus: ","ytunnus")+'Osoite: '+bz("address")+'<br>Sähköposti ja yhteydenotot tietosuoja-asioissa: '+bz("email")+(BIZ.phone?'<br>Puhelin: '+bz("phone"):'')+'</p>'+
       '<h2>2. Mitä tietoja käsittelemme</h2><ul><li>Tilaajan nimi, puhelinnumero ja sähköpostiosoite</li><li>Tilauksen sisältö, hinta, maksutapa, toivottu valmistumispäivä ja lisätiedot (esimerkiksi välineen merkki ja pituus)</li><li>Suosittelijan nimi, jos olet antanut sen kaverialennusta varten</li><li>Tilauksen aikaleima sekä tiedot ehtojen hyväksymisestä ja palvelun aloittamispyynnöstä</li><li>Tilauksen peruutuksen tiedot, jos peruutat tilauksen</li><li>Sähköpostiosoite, jota käytetään tilaus- ja peruutusvahvistusten sekä valmis-ilmoituksen lähettämiseen</li></ul>'+
       '<h2>3. Käsittelyn tarkoitus ja peruste</h2><ul><li>Tilauksen ja sopimuksen hoitaminen sekä yhteydenpito tilauksesta, esimerkiksi tilausvahvistus ja ilmoitus välineiden valmistumisesta. Peruste: sopimuksen täyttäminen.</li><li>Kirjanpito ja muut lakisääteiset velvoitteet. Peruste: lakisääteinen velvoite.</li><li>Kaverialennuksen toteuttaminen. Peruste: sopimuksen täyttäminen ja oikeutettu etu.</li></ul><p>Emme käytä tietojasi suoramarkkinointiin ilman erillistä suostumustasi.</p>'+
       '<h2>4. Mistä tiedot saadaan</h2><p>Tiedot saadaan sinulta itseltäsi tilauksen yhteydessä. Suosittelijan nimen on voinut antaa hänen kauttaan tullut uusi asiakas.</p>'+
@@ -922,7 +965,7 @@ button,input,textarea,select{font:inherit;color:inherit}
   /* ilmaiset viestit: avaa omistajan oman sähköposti- tai viestisovelluksen valmiiksi kirjoitetulla viestillä */
   function mailLink(to,subj,body){ return "mailto:"+encodeURIComponent(to)+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body); }
   function smsLink(phone,body){ return "sms:"+phone+"?&body="+encodeURIComponent(body); }
-  function sig(){ return "\n\nTerveisin\n"+BIZ.name+"\nVahapaja Ski Shop\n"+BIZ.phone; }
+  function sig(){ return "\n\nTerveisin\n"+BIZ.name+"\nVahapaja Ski Shop"+(BIZ.phone?"\n"+BIZ.phone:""); }
   function msgBlock(label,to,subj,body,link){
     return '<div class="mblock"><div class="legend">'+esc(label)+' · <span class="num" style="text-transform:none;letter-spacing:0">'+esc(to)+'</span></div><div class="msgbox">'+esc((subj?subj+"\n\n":"")+body)+'</div><div class="inline"><button class="btn small" type="button" data-copytext="'+esc((subj?subj+"\n\n":"")+body)+'">Kopioi viesti</button><button class="btn ghost small" type="button" data-copytext="'+esc(to)+'">Kopioi '+(link.indexOf("mailto")===0?"osoite":"numero")+'</button>'+(link.indexOf("mailto")===0?'<button class="btn blue small" type="button" data-sendmail="1" data-to="'+esc(to)+'" data-subj="'+esc(subj)+'" data-body="'+esc(body)+'">Lähetä nyt</button>':'<a class="btn ghost small" target="_blank" rel="noopener" href="'+esc(link)+'">Avaa viestisovelluksessa</a>')+'</div></div>';
   }
@@ -1145,8 +1188,8 @@ button,input,textarea,select{font:inherit;color:inherit}
   }
   window.addEventListener("hashchange",route);
 
-  renderHome(); renderProducts(); updateCount();
-  (function(){ var f=$("footBiz"); f.innerHTML="<p>"+esc(BIZ.name)+"</p><p>Y-tunnus: "+esc(BIZ.ytunnus)+"</p><p>"+esc(BIZ.address)+"</p><p>Puhelin: "+esc(BIZ.phone)+"</p><p>Sähköposti: "+esc(BIZ.email)+"</p>"; $("copyBiz").textContent="© "+BIZ.name+" · Vahapaja Ski Shop"; })();
+  renderHome(); renderProducts(); renderReviews(); updateCount();
+  (function(){ var f=$("footBiz"); f.innerHTML="<p>"+esc(BIZ.name)+"</p>"+(BIZ.ytunnus?"<p>Y-tunnus: "+esc(BIZ.ytunnus)+"</p>":"")+"<p>"+esc(BIZ.address)+"</p>"+(BIZ.phone?"<p>Puhelin: "+esc(BIZ.phone)+"</p>":"")+"<p>Sähköposti: "+esc(BIZ.email)+"</p>"; $("copyBiz").textContent="© "+BIZ.name+" · Vahapaja Ski Shop"; })();
   route();
 })();
 </script>

@@ -2,7 +2,7 @@
    Liitä tähän vain oikeita arvosteluja Google-profiilistasi. Ilman placeId:tä ja arvosteluja sivulla näkyy vain kehotus arvostella. */
 window.VAHAPAJA_REVIEWS = {
   /* Place ID: Google Business Profile -sivulta tai osoitteesta developers.google.com/maps/documentation/places/web-service/place-id */
-  placeId: "",
+  placeId: "ChIJg92YCHjxjUYRWos-gimGRz0",
   rating: "",   /* esim. "4.9" */
   count: "",    /* esim. "12" */
   reviews: [

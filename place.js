@@ -2,7 +2,7 @@
    Täytä vähintään "query". Ilman sitä karttaa ei näytetä. */
 window.VAHAPAJA_PLACE = {
   /* Mitä Google Maps hakee: yrityksen nimi ja osoite, esim. "vahapaja, Esimerkkikatu 1, Espoo" */
-  query: "",
+  query: "Vahapaja, Tahtikuja 2, 02940 Espoo",
   /* Valinnainen: Place ID (sama kuin reviews.js:ssä), tarkentaa pinnin */
   placeId: "",
   /* Valinnainen: oma Maps-linkki (Maps → Jaa → Kopioi linkki), jos haluat sen napin osoitteeksi */

@@ -8,5 +8,5 @@ window.VAHAPAJA_PLACE = {
   /* Valinnainen: oma Maps-linkki (Maps → Jaa → Kopioi linkki), jos haluat sen napin osoitteeksi */
   mapsUrl: "",
   /* Valinnainen: ohje perille, esim. "Autotallin ovi pihan puolella, soita kun olet perillä." */
-  note: ""
+  note: "Jätä sukset tai lauta varaston oven eteen. Siihen on pian tulossa suksiteline."
 };
